@@ -1,0 +1,68 @@
+clear
+echo none
+#package omp 1
+suffix omp
+
+units           metal
+atom_style	atomic
+boundary        p p p
+
+timestep 0.001
+variable time_eq2	equal   75000
+variable mytemp         equal   300.0
+#variable a0		equal   3.5200000000000000
+variable a0             equal   4.04999999999999982236
+variable itemp          equal   1400.0
+
+#variable a0 equal 2.705
+#variable ca0 equal 1.582
+#variable c equal ${a0}*${ca0}
+
+lattice         fcc ${a0}
+region          box block -1 1 -1 1 -1 1
+create_box      1 box
+create_atoms    1 box
+
+
+include potential.mod
+
+mass 1 26.9815  # Al
+
+
+thermo 1000
+#thermo_style custom step temp press pe ke etotal
+thermo_style custom step temp pe etotal press vol cpuremain
+
+write_data initial.lmp
+
+
+group Al type 1
+
+variable n_al equal count(Al)
+
+
+print "***** Al atoms = ${n_al}"
+
+#minimize 0.0 1.0e-4 200000 100000
+fix 1 all box/relax aniso 0.0
+minimize 0.0 1.0e-9 200000 100000
+
+
+
+compute eng_per_atom all pe/atom
+compute ke_per_atom all ke/atom
+
+variable        cohesive_energy equal "pe/atoms"
+print "Cohesive Energy (eV/atom): ${cohesive_energy}"
+
+
+variable        a equal "lx/2"          # Lattice parameter is the length of the box in x direction
+variable        c equal "lz/2"
+variable        c_by_a equal ${c}/${a}
+print "Lattice Parameter (Angstroms): ${a}"
+print "c: ${c}"
+print "c/a ratio: ${c_by_a}"
+
+
+
+
