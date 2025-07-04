@@ -1,0 +1,83 @@
+clear
+echo none
+#package omp 1
+suffix omp
+
+units           metal
+atom_style      atomic
+boundary        p p p
+
+
+variable time_eq2       equal   75000
+variable mytemp         equal   300.0
+variable a0             equal   4.15
+variable c0		equal	7.272	
+variable itemp          equal   1400.0
+variable time_step      equal   0.001
+timestep ${time_step}
+variable c0bya0      equal ${c0}/${a0}
+variable cbyahalf    equal ${c0bya0}/2
+
+lattice custom ${a0} & 
+       a1 0.5 0.5 0.0 &
+       a2 0.5 0.0 0.5 &
+       a3 0. 0.5 0.5 &
+       basis 0.0 0.0 0.0 &
+       basis 0.25 0.25 0.25 &
+                                
+
+region          box block 0 2 0 2 0 2
+create_box      3 box
+
+create_atoms 1 box basis 1 1 basis 2 2 
+
+
+include potential.mod
+
+mass 1 58.6934  # Ni
+mass 2 26.9815  # Al
+mass 3 101.0699 # Ru
+
+
+write_data initial.lmp
+
+
+group Al type 2
+group Ni type 1
+group Ru type 3
+
+variable n_al equal count(Al)
+variable n_ni equal count(Ni)
+variable n_ru equal count(Ru)
+
+
+print "***** Al atoms = ${n_al}"
+print "***** Ni atoms = ${n_ni}"
+print "***** Ru atoms = ${n_ru}"
+
+#minimize 0.0 1.0e-4 200000 100000
+fix 1 all box/relax aniso 0.0
+#minimize 0.0 1.0e-5 200000 100000
+#minimize 0.0 1.0e-6 200000 100000
+#minimize 0.0 1.0e-7 200000 100000
+#minimize 0.0 1.0e-8 200000 100000
+minimize 0.0 1.0e-9 200000 100000
+
+
+
+compute eng_per_atom all pe/atom
+compute ke_per_atom all ke/atom
+
+variable        cohesive_energy equal "pe/atoms" 
+print "Cohesive Energy (eV/atom): ${cohesive_energy}"
+
+
+variable        a equal "lx/2"          # Lattice parameter is the length of the box in x direction
+variable	c equal "lz/2"
+variable        c_by_a equal ${c}/${a}
+print "Lattice Parameter (Angstroms): ${a}"
+print "c: ${c}"
+print "c/a ratio: ${c_by_a}"
+
+
+write_data B3.data
