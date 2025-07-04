@@ -1,0 +1,85 @@
+LAMMPS (23 Jun 2022 - Update 3)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+clear
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+echo none
+Lattice spacing in x,y,z = 4.15 4.15 4.15
+Created orthogonal box = (0 0 0) to (8.3 8.3 8.3)
+  1 by 2 by 2 MPI processor grid
+Created 64 atoms
+  using lattice units in orthogonal box = (0 0 0) to (8.3 8.3 8.3)
+  create_atoms CPU = 0.069 seconds
+System init for write_data ...
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 10
+  ghost atom cutoff = 10
+  binsize = 5, bins = 2 2 2
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair eam/alloy, perpetual
+      attributes: half, newton on
+      pair build: half/bin/atomonly/newton
+      stencil: half/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+32 atoms in group Al
+32 atoms in group Ni
+0 atoms in group Ru
+***** Al atoms = 32
+***** Ni atoms = 32
+***** Ru atoms = 0
+WARNING: Using 'neigh_modify every 1 delay 0 check yes' setting during minimization (src/min.cpp:187)
+Per MPI rank memory allocation (min/avg/max) = 5.138 | 5.138 | 5.138 Mbytes
+   Step          Temp          Press          PotEng         KinEng         TotEng           Lx             Ly             Lz           Volume        CPULeft    
+         0   0              1573412.1     -147.76532      0             -147.76532      8.3            8.3            8.3            571.787        0            
+      1000   0              350502.53     -237.21995      0             -237.21995      9.13           9.13           9.13           761.0485       3228.1772    
+      1834   0             -3.276155e-07  -253.21615      0             -253.21615      9.8206809      9.8206809      9.8206809      947.16316      2901.0369    
+Loop time of 26.8471 on 4 procs for 1834 steps with 64 atoms
+
+48.2% CPU use with 4 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+     -147.765322528215  -253.216150603396  -253.216150603398
+  Force two-norm initial, final = 972.58382 2.8351671e-10
+  Force max component initial, final = 561.52153 1.6368982e-10
+  Final line search alpha, max atom move = 1 1.6368982e-10
+  Iterations, force evaluations = 1834 1836
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 8.5244     | 8.6502     | 8.7231     |   2.6 | 32.22
+Neigh   | 0.00011335 | 0.0002162  | 0.00037231 |   0.0 |  0.00
+Comm    | 8.7402     | 8.9417     | 9.1811     |   6.1 | 33.31
+Output  | 0.0090226  | 0.010741   | 0.013013   |   1.4 |  0.04
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 9.244      |            |       | 34.43
+
+Nlocal:             16 ave          36 max           4 min
+Histogram: 1 0 2 0 0 0 0 0 0 1
+Nghost:           1557 ave        1569 max        1537 min
+Histogram: 1 0 0 0 0 0 0 2 0 1
+Neighs:           2432 ave        4644 max         878 min
+Histogram: 1 0 0 2 0 0 0 0 0 1
+FullNghs:            0 ave           0 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 9728
+Ave neighs/atom = 152
+Neighbor list builds = 2
+Dangerous builds = 0
+Cohesive Energy (eV/atom): -3.95650235317809
+Lattice Parameter (Angstroms): 4.91034044679431
+c: 9.82068089358863
+c/a ratio: 2
+System init for write_data ...
+Total wall time: 0:00:28
