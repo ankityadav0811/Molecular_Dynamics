@@ -1,0 +1,56 @@
+clear
+echo none
+#package omp 1
+#suffix omp
+
+units           metal
+atom_style      atomic
+boundary p p p
+variable a0 equal 4.04999918095267
+variable time_eq2       equal   75000
+variable mytemp         equal   300.0
+
+timestep 0.001
+
+variable maxtemp equal 1300.0
+
+#pair_style lj/cut 10 #2.5a0
+#pair_coeff * * 1 1
+
+read_data fortensile.lmp
+
+include potential.mod
+
+thermo_style custom step temp pe etotal press vol cpuremain
+
+
+replicate 1 1 25
+
+fix 3 all npt temp 300.0 300.0 $(100.0*dt) iso 0.0 0.0 $(1000.0*dt)
+run 50000
+unfix 3
+
+
+variable tmp equal vol
+variable vol0 equal ${tmp}
+
+group al type 1
+group mg type 2
+variable n_al equal count(al)
+variable n_mg equal count(mg)
+
+#this is for porosity calculation
+fix 5 all box/relax iso 0.0
+minimize 0.0 1e-6 100000 100000 #etol is relative
+unfix 5
+
+variable tmp equal 100-100*atoms*${a0}^3/(4*vol)
+variable porosity equal ${tmp}
+
+print "calculatedporosity = ${porosity}"
+
+
+
+print "***** Al atoms = ${n_al}"
+print "***** Mg atoms = ${n_mg}"
+

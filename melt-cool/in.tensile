@@ -1,0 +1,135 @@
+#script for metl-cool without any pressure while heating or cooling
+
+clear
+echo none
+#package omp 1
+suffix omp
+
+units           metal
+atom_style      atomic
+boundary p p p
+variable a0 equal 4.04999918095267
+variable time_eq2       equal   75000
+variable mytemp         equal   300.0
+variable time_step	equal   0.001
+variable tdamp          equal   "v_time_step*100"
+variable pdamp          equal   "v_time_step*1000"
+
+variable maxtemp equal 1300.0
+
+lattice         fcc ${a0}
+region          box block -25 25 -25 25 -0.5 0.5
+create_box      1 box
+create_atoms    1 box
+mass 1 26.98
+
+variable tmp equal vol
+variable vol0 equal ${tmp}
+
+
+#pair_style lj/cut 10 #2.5a0
+#pair_coeff * * 1 1
+
+include potential.mod
+write_data initial.lmp nocoeff nofix
+
+thermo_style custom step temp pe etotal press vol cpuremain
+
+#thermo_style custom step temp pe etotal press vol lx ly v_epsilon_x v_sigma_x v_epsilon_y v_sigma_y v_sigma_z
+variable tmp equal lx
+variable lx0 equal ${tmp}
+
+variable tmp equal ly
+variable ly0 equal ${tmp}
+
+group al type 1
+group mg type 2
+variable n_al equal count(al)
+variable n_mg equal count(mg)
+
+
+dump   101 all custom 25000 dump_meltcool.* id type x y z vx vy vz
+# Set the initial temperature to 300 K and pressure to 0 bar
+velocity all create ${maxtemp} 4928459
+
+# Perform heating ramp
+#run 10000
+
+# Relax the sample for 50 ps at 1173 K
+#unfix 1
+fix 2 all npt temp  ${maxtemp}  ${maxtemp} ${tdamp} iso 0.0 0.0 ${pdamp}
+run 500000
+unfix 2
+
+# Set the cooling rate by adjusting the number of time steps and reduce the temperature
+fix 2 all npt temp  700.0 300.0  ${tdamp} iso 0.0 0.0 ${pdamp}
+
+
+# Perform cooling simulation by adjusting the timestep and run for desired cooling rate
+run 40000
+
+# Relax the system at 300 K and zero pressure
+unfix 2
+#run 200000
+
+write_data fortensile.lmp
+
+
+replicate 1 1 25
+
+
+fix 3 all npt temp 300.0 300.0 ${tdamp} iso 0.0 0.0 ${pdamp}
+run 50000
+unfix 3
+
+
+variable tmp equal vol
+variable vol0 equal ${tmp}
+
+
+#change_box all z delta -30 30 units lattice #rcut=5 for Al
+change_box all boundary p p m
+ 
+#fix 3 all npt temp 300.0 300.0 $(100.0*dt) iso 0.0 0.0 $(1000.0*dt)
+fix 3 all npt temp 300.0 300.0 ${tdamp} x 0.0 0.0 ${pdamp} y 0.0 0.0 ${pdamp}
+run 50000
+unfix 3
+
+
+print "***** Al atoms = ${n_al}"
+print "***** Mg atoms = ${n_mg}"
+
+#fix 5 all box/relax iso 0.0
+#minimize 0.0 1e-6 100000 100000 #etol is relative
+#unfix 5
+
+#variable tmp equal 100-100*atoms*${a0}^3/(4*vol)
+#variable porosity equal ${tmp}
+
+#print "calculatedporosity = ${porosity}"
+
+
+thermo_style custom step temp pe etotal press vol lx ly v_epsilon_x v_sigma_x v_epsilon_y v_sigma_y v_sigma_z
+
+
+print "********** Tension X **********"
+
+
+variable tmp equal lx
+variable lx0 equal ${tmp}
+
+variable tmp equal ly
+variable ly0 equal ${tmp}
+
+#dump   101 all custom 1000 dump_tens_y.* id type x y z c_csym c_eng
+#change_box all z delta ${deltaz} 0 remap units lattice
+#fix             2 all nve
+fix 4  all deform 1 x erate 2e-3 units box remap x
+#fix 2  all nvt temp ${mytemp} ${mytemp} ${tdamp} drag 0.0 pchain 8 #iso 0.0 0.0 ${pdamp}
+fix 2  all npt temp ${mytemp} ${mytemp} ${tdamp} drag 0.0 tchain 8 pchain 8 tloop 4 ploop 4 y 0.0 0.0 ${pdamp}
+run ${time_eq2}
+unfix 2
+unfix 4
+
+
+write_data final.lmp nocoeff nofix
