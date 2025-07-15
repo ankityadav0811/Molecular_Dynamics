@@ -69,7 +69,7 @@ print "Cohesive Energy (eV/atom): ${cohesive_energy}"
 variable ymultiple          equal   sqrt(3)*5
 
 variable        a equal "lx/5"          # Lattice parameter is the length of the box in x direction
-variable        b equal ly/${ymultiple}
+variable        b equal ly/${ymultiple}  # unit vector lenght in y is sqrt(3) 
 variable        c equal "lz/3"
 variable        c_by_a equal ${c}/${a}
 print "Lattice Parameter (Angstroms): ${a}"
