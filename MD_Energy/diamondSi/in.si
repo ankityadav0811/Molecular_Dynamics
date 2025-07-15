@@ -1,0 +1,61 @@
+
+clear
+echo none
+#package omp 1
+suffix omp
+
+units           metal
+atom_style      atomic
+boundary        p p p
+
+variable mytemp         equal   300.0
+variable a0             equal   5.431
+variable a1		equal   3.90
+variable c1		equal	6.45	
+variable itemp          equal   1400.0
+variable time_step      equal   0.001
+timestep ${time_step}
+variable root3		equal	sqrt(3)
+variable half_root3	equal  0.5*${root3}
+variable inv_root3 equal 1.0/${root3}
+variable half_inv_root3 equal 0.5*${inv_root3}
+
+
+lattice         diamond ${a0}
+region		whole block 0 5 0 5 0 3 units lattice
+create_box      2 whole
+create_atoms    1 region whole
+
+
+
+mass 1 28.0855    # Si
+mass 2 72.63      # Ge
+
+
+include potential.mod
+
+write_data Si_initial.data
+
+
+fix 1 all box/relax x 0.0 y 0.0 z 0.0 
+minimize 0.0 1.0e-5 100000 100000
+unfix 1
+
+compute eng_per_atom all pe/atom
+compute ke_per_atom all ke/atom
+
+variable        cohesive_energy equal "pe/atoms"
+print "Cohesive Energy (eV/atom): ${cohesive_energy}"
+
+
+variable        a equal "lx/5"          # Lattice parameter is the length of the box in x direction
+variable        b equal "ly/5"
+variable        c equal "lz/3"
+variable        c_by_a equal ${c}/${a}
+print "Lattice Parameter (Angstroms): ${a}"
+print "b: ${b}"
+print "c/a ratio: ${c_by_a}"
+
+
+
+write_data      Si_relaxed.data

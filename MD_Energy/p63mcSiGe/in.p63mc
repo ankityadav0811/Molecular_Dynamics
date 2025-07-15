@@ -1,0 +1,82 @@
+
+clear
+echo none
+#package omp 1
+suffix omp
+
+units           metal
+atom_style      atomic
+boundary        p p p
+
+variable mytemp         equal   300.0
+variable a0             equal   5.431
+variable a		equal   3.90
+variable c		equal	6.45
+variable u              equal   0.375
+variable time_step      equal   0.001
+timestep ${time_step}
+variable root3		equal	sqrt(3)
+variable half_root3	equal   0.5*${root3}
+variable inv_root3      equal   1.0/${root3}
+variable half_inv_root3 equal   0.5*${inv_root3}
+variable cbya		equal   ${c}/${a}
+variable half_cbya	equal   0.5*${cbya}
+variable ucbya		equal   ${cbya}*${u}
+variable halfplusu      equal   0.5+${u}
+variable halfplusuxcbya equal   ${halfplusu}*${cbya}
+
+print "a = ${a}"
+print "root3 = ${root3}"
+print "half_root3 = ${half_root3}"
+print "inv_root3 = ${inv_root3}"
+print "half_inv_root3 = ${half_inv_root3}"
+
+
+lattice custom ${a} &
+       a1 0.5 -0.8660254 0.0 &
+       a2 0.5 0.8660254 0.0 &
+       a3 0.0 0.0 ${cbya} &
+       basis 0.33333333333 0.66666666666 0.0 &
+       basis 0.66666666666 0.33333333333 0.5 &
+       basis 0.33333333333 0.66666666666 ${u} &
+       basis 0.66666666666 0.33333333333 ${halfplusu}
+
+region          box block 0 5 0 5 0 3
+create_box      2 box
+create_atoms 2 box basis 1 1 basis 2 1 basis 3 2 basis 4 2
+
+
+
+mass 1 28.0855    # Si
+mass 2 72.63      # Ge
+
+
+include potential.mod
+
+write_data SiGe_initial.data
+
+
+fix 1 all box/relax x 0.0 y 0.0 z 0.0 
+minimize 0.0 1.0e-5 100000 100000
+unfix 1
+
+compute eng_per_atom all pe/atom
+compute ke_per_atom all ke/atom
+
+variable        cohesive_energy equal "pe/atoms"
+print "Cohesive Energy (eV/atom): ${cohesive_energy}"
+
+variable ymultiple          equal   sqrt(3)*5
+
+variable        a equal "lx/5"          # Lattice parameter is the length of the box in x direction
+variable        b equal ly/${ymultiple}
+variable        c equal "lz/3"
+variable        c_by_a equal ${c}/${a}
+print "Lattice Parameter (Angstroms): ${a}"
+print "b: ${b}"
+print "c: ${c}"
+print "c/a ratio: ${c_by_a}"
+
+
+
+write_data      SiGe_relaxed.data
