@@ -3,7 +3,7 @@
 # Output file
 echo "#Distance (Å)    Energy (eV)" > energy_vs_distance.txt
 
-for d in $(seq 0 0.1 1000.0); do
+for d in $(seq 0 0.1 10.0); do
     echo "Testing distance: $d Å"
 
     # Replace atom position in LAMMPS input
