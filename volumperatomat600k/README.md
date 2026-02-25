@@ -51,6 +51,17 @@ Note: The script utilizes fix ave/time with the ave running keyword, synchronize
 
 📈 Example Output
 Upon successful completion, the script will print a summary block like this:
+
+---------------------------------------------------------
+      VOLUME COMPARISON AT 600.0 K
+---------------------------------------------------------
+ INSTANTANEOUS (Step 50k):
+   - Vol/Atom:            17.5127 Ang^3/atom
+
+ AVERAGED (Cumulative):
+   - Box Volume:          35866.1 Ang^3
+   - Vol/Atom:            17.5128 Ang^3/atom
+---------------------------------------------------------
 ---------------------------------------------------------
       VOLUME COMPARISON AT 600.0 K
 
