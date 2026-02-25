@@ -12,8 +12,8 @@ variable cfac equal 1.0e-4
 variable cunits string GPa
 
 # Define MD parameters
-variable nevery equal 200                  # sampling interval
-variable nrepeat equal 200                 # number of samples
+variable nevery equal 400                  # sampling interval
+variable nrepeat equal 400                 # number of samples
 variable nfreq equal ${nevery}*${nrepeat} # length of one average
 variable nthermo equal ${nfreq}           # interval for thermo output
 variable nequil equal 10*${nthermo}       # length of equilibration run
