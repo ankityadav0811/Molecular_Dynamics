@@ -1,7 +1,7 @@
 # Aluminum Regular Hexagone Polycrystal Generation Script
 This repository contains a Bash script to generate a 3D polycrystalline Aluminum structure using Atomsk. The script automates the creation of grain seeds, defines orientations, and exports the final geometry to LAMMPS format.
 
-🛠 Prerequisites
+### 🛠 Prerequisites
 To run this script, you must have the following installed on your Linux system:
 
 Atomsk: The core tool for creating and manipulating atomic structures.
@@ -22,8 +22,14 @@ It applies random spatial dispersion and rotation based on the rozptyl and uhel 
 
 - Compression: The final .lmp (LAMMPS data) and .cfg (Atomeye) files are compressed using pigz to save disk space.
 
-📂 File Descriptions
+## 📂 File Descriptions
 - generate_poly.sh:	The main bash script.
 - poly.txt        :	The input file for Atomsk containing box size and grain seeds.
 - poly.cfg.gz	    : Compressed configuration file for visualization (Atomeye/OVITO).
 - poly.lmp.gz	    : Compressed LAMMPS data file for MD simulations.
+
+##🚀 How to Use
+- Grant Permissions:
+chmod +x create_poly.sh
+- Run the Script:
+./create_poly.sh
