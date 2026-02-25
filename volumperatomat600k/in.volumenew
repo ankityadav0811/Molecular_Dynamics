@@ -58,7 +58,8 @@ variable        box_volume equal vol
 variable        per_atom_volume equal "v_box_volume / v_num_atoms"
 
 # 2. Averaged (Over the full run)
-variable        avg_vol_per_atom equal "f_avg_vol / v_num_atoms"
+variable	final_avg_vol equal f_avg_vol
+variable	avg_vol_per_atom equal "v_final_avg_vol / v_num_atoms"
 
 print "---------------------------------------------------------"
 print "      VOLUME COMPARISON AT ${ytemp} K"
@@ -68,7 +69,7 @@ print "   - Box Volume:          ${box_volume} Ang^3"
 print "   - Vol/Atom:            ${per_atom_volume} Ang^3/atom"
 print ""
 print " AVERAGED (Cumulative):"
-print "   - Box Volume:          ${f_avg_vol} Ang^3"
+print "   - Box Volume:          ${final_avg_vol} Ang^3"
 print "   - Vol/Atom:            ${avg_vol_per_atom} Ang^3/atom"
 print "---------------------------------------------------------"
 
