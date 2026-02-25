@@ -13,15 +13,9 @@ pigz: Parallel implementation of gzip for fast compression of large output files
 🔬 How the Script Works
 The script follows a 4-step process:
 
-Seed Generation (poly.txt): It calculates four "nodes" (grain centers) within a defined simulation box (200×173.2×100  
-A
-˚
- ). It applies random spatial dispersion and rotation based on the rozptyl and uhel variables.
+Seed Generation (poly.txt): It calculates four "nodes" (grain centers) within a defined simulation box (200×173.2×100 A˚). It applies random spatial dispersion and rotation based on the rozptyl and uhel variables.
 
-Unit Cell Creation: It creates a fundamental Aluminum FCC unit cell with a lattice parameter of 4.05  
-A
-˚
-  and specific crystallographic orientations ([1-10] [001] [110]).
+Unit Cell Creation: It creates a fundamental Aluminum FCC unit cell with a lattice parameter of 4.05 A˚ and specific crystallographic orientations ([1-10] [001] [110]).
 
 Polycrystal Assembly: Atomsk uses the Voronoi tessellation method to "fill" the simulation box with grains centered at the generated nodes.
 
