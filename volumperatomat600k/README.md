@@ -12,9 +12,7 @@ Crystal Structure: FCC (Face-Centered Cubic)
 Supercell Size: 8×8×8 unit cells (2048 atoms)
 
 Potential: MEAM (Modified Embedded Atom Method) with a 5.0  
-A
-˚
-  cutoff.
+A˚ cutoff.
 
 Ensemble: NPT (Isobaric-Isothermal)
 
@@ -24,17 +22,14 @@ Temperature: 600K
 
 📂 File Descriptions
 File	Description
-in.vol_calc	The primary LAMMPS input script.
+in.volume	The primary LAMMPS input script.
 potential.mod	Contains the MEAM potential parameters and library references.
 README.md	Documentation of the project.
-￼
-Export to Sheets
+
 ￼
 🚀 How to Run
 Ensure you have LAMMPS installed with the MEAM and OPENMP packages.
 
-Bash
-￼
 # Navigate to the folder
 cd volumperatomat600k
 
