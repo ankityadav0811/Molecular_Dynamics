@@ -26,7 +26,6 @@ in.volume	The primary LAMMPS input script.
 potential.mod	Contains the MEAM potential parameters and library references.
 README.md	Documentation of the project.
 
-￼
 🚀 How to Run
 Ensure you have LAMMPS installed with the MEAM and OPENMP packages.
 
@@ -34,7 +33,7 @@ Ensure you have LAMMPS installed with the MEAM and OPENMP packages.
 cd volumperatomat600k
 
 # Run using MPI (e.g., 4 processors)
-mpirun -np 4 lmp_mpi -in in.vol_calc
+mpirun -np 4 lmp_mpi -in in.volume
 📊 Key Logic: Instantaneous vs. Averaged
 The script is designed to output two distinct volume metrics to demonstrate the impact of thermal noise:
 
