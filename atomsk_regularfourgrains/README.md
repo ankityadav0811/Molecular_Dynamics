@@ -22,8 +22,7 @@ Polycrystal Assembly: Atomsk uses the Voronoi tessellation method to "fill" the 
 Compression: The final .lmp (LAMMPS data) and .cfg (Atomeye) files are compressed using pigz to save disk space.
 
 📂 File Descriptions
-File	Description
-generate_poly.sh	The main bash script.
-poly.txt	The input file for Atomsk containing box size and grain seeds.
-poly.cfg.gz	Compressed configuration file for visualization (Atomeye/OVITO).
-poly.lmp.gz	Compressed LAMMPS data file for MD simulations.
+- generate_poly.sh	The main bash script.
+- poly.txt	The input file for Atomsk containing box size and grain seeds.
+- poly.cfg.gz	Compressed configuration file for visualization (Atomeye/OVITO).
+- poly.lmp.gz	Compressed LAMMPS data file for MD simulations.
