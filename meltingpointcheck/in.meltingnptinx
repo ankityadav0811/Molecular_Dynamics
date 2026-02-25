@@ -1,0 +1,83 @@
+# LAMMPS Script: 2-phase method for finding melting temperature of Al
+clear
+echo none
+#package omp 1
+suffix omp
+
+units           metal
+dimension       3
+boundary        p p p        
+atom_style      atomic
+
+variable mytemp      equal   300.0
+variable a0          equal   4.04999918095267
+
+variable itemp       equal   750.0
+variable time_step   equal   0.001
+timestep ${time_step}
+variable tdamp       equal   "v_time_step*100"
+variable pdamp       equal   "v_time_step*1000"
+
+
+
+
+
+# ---------------- INITIALIZATION ----------------
+# Potential and Atom Setup
+lattice         fcc ${a0}   
+region          box block 0 10 0 5 0 5 units lattice  # Initial large box
+create_box      1 box
+create_atoms    1 box
+
+mass            1 26.9815
+
+include potential.mod
+
+# ---------------- DEFINE GROUPS ----------------
+# Define a solid region (bottom half)
+region solid block  0 5 INF INF INF INF units lattice
+group solid region solid
+
+# Define a liquid region (top half)
+region liquid block 5 10 INF INF INF INF  units lattice
+group liquid region liquid
+
+
+# ---------------- INITIAL VELOCITIES ----------------
+# Equilibrate the solid at low temperature (300 K)
+velocity        solid create 300.0 12345 mom yes rot yes
+fix             1 solid npt temp 300.0 300.0 ${tdamp} iso 0.0 0.0 ${pdamp}
+run             5000
+unfix           1
+
+# Equilibrate the liquid at higher temperature (melting point estimate, e.g., 2000 K)
+velocity        liquid create 2000.0 12345 mom yes rot yes
+fix             2 liquid npt temp 2000.0 2000.0 ${tdamp} iso 0.0 0.0 ${pdamp}
+run             5000
+unfix           2
+
+write_data initial.lmp
+
+
+
+# Combine the solid and liquid regions into one system (free surface along x-direction)
+group           all union solid liquid
+
+# ---------------- INITIAL NPT RUN ----------------
+# Set the temperature to an initial guess close to melting temperature (1000 K)
+
+reset_timestep 0
+
+dump 101 all custom 1000 dump_melting.* id type x y z vx vy vz
+
+# Run NPT in the x-direction only, allowing the system to adjust
+fix             3 all npt temp ${itemp} ${itemp} ${tdamp} x 0.0 0.0 ${pdamp}
+run             20000               # Run for 20 ps 
+unfix           3
+
+# ---------------- ADJUST TEMPERATURE ----------------
+# Visualization: At this point, more solid or liquid.
+# If more solid, increase temperature; if more liquid, decrease temperature.
+# Continue running simulations at different temperatures until convergence.
+
+write_data final.lmp

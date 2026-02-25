@@ -1,0 +1,91 @@
+7# ==============================================================================
+# LAMMPS Script: Two-Phase Coexistence Method for Aluminum Melting Point
+# Methodology: Solid-Liquid interface stability at zero pressure
+# =============================================================================
+
+clear
+echo none
+#package omp 1
+suffix omp
+
+units           metal
+dimension       3
+boundary        p p p        
+atom_style      atomic
+
+# -------------------------- 1. System Variables -------------------------------
+
+variable mytemp      equal   300.0                              # Initial solid temperature (K)
+variable mtemp       equal   2500.0                             # Melting initialization temp (K)
+variable a0          equal   4.04999918095267                   # Lattice constant for Al
+variable a1          equal   3.5199999945828906
+variable itemp       equal   935                                # Target Coexistence Temp (K)
+variable time_step   equal   0.001                              # 1 fs timestep
+timestep ${time_step}
+variable tdamp       equal   "v_time_step*100"
+variable pdamp       equal   "v_time_step*1000"
+
+# -------------------------- 2. Geometry Setup ---------------------------------
+lattice         fcc ${a0}   
+region          box block 0 10 0 5 0 5 units lattice  # Initial large box
+create_box      1 box
+create_atoms    1 box
+
+mass            1 26.9815  # Al
+
+include         potential.mod
+
+region          reg_solid block  INF 5 INF INF INF INF units lattice
+group           solid region reg_solid
+
+region          reg_liquid block 5 INF INF INF INF INF  units lattice
+group           liquid region reg_liquid
+
+# -------------------------- 3. Minimization -----------------------------------
+# Remove any high-energy overlaps from the initial lattice setup
+minimize 0.0 1.0e-8 1000 100000
+
+fix 1 all box/relax aniso 0.0
+minimize 0.0 1.0e-8 1000 100000
+unfix 1
+
+
+# -------------------------- 4. Phase Preparation ------------------------------
+# We heat the 'liquid' group high enough to melt it, while keeping 'solid' cool
+velocity        solid  create ${mytemp} 22345 mom yes rot yes
+velocity        liquid create ${mtemp} 12345 mom yes rot yes
+
+# Thermostat each group separately to create the two-phase system
+fix 2           liquid langevin ${mtemp} ${mtemp} 0.4 884422 zero yes gjf vhalf
+fix 4           solid langevin ${mytemp} ${mytemp} 0.4 224488 zero yes gjf vhalf
+# NPH allows the box to expand/contract as the liquid forms
+fix 5 all nph aniso 0.0 0.0 ${pdamp} drag 0.0 pchain 8 ploop 4
+run 20000              
+
+unfix 5
+unfix 4
+unfix 2
+
+
+write_data initial_coexistenc.lmp
+
+# Combine the solid and liquid regions into one system (free surface along x-direction)
+group           all union solid liquid
+
+# ---------------- INITIAL NPT RUN ----------------
+# Set the temperature to an initial guess close to melting temperature (1000 K)
+
+reset_timestep 0
+
+# Monitoring the interface migration
+dump 101 all custom 10000 dump_melting.* id type x y z vx vy vz
+
+# The target NPT run: Observe if the interface moves
+# If Solid grows -> T_target < T_melt. If Liquid grows -> T_target > T_melt.
+# Apply NPT with anisotropic pressure coupling to ensure zero-stress 
+# in all directions as the phase boundary shifts.
+fix             3 all npt temp ${itemp} ${itemp} ${tdamp} aniso 0.0 0.0 ${pdamp}
+run             100000               
+unfix           3
+
+write_data final_state.lmp
