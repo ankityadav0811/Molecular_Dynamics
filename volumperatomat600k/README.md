@@ -51,8 +51,6 @@ Note: The script utilizes fix ave/time with the ave running keyword, synchronize
 
 📈 Example Output
 Upon successful completion, the script will print a summary block like this:
-
-￼
 ---------------------------------------------------------
       VOLUME COMPARISON AT 600.0 K
 ---------------------------------------------------------
