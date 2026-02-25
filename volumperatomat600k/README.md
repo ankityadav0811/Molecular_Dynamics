@@ -52,25 +52,28 @@ Note: The script utilizes fix ave/time with the ave running keyword, synchronize
 📈 Example Output
 Upon successful completion, the script will print a summary block like this:
 
----------------------------------------------------------
-      VOLUME COMPARISON AT 600.0 K
----------------------------------------------------------
- INSTANTANEOUS (Step 50k):
-   - Vol/Atom:            17.5127 Ang^3/atom
 
- AVERAGED (Cumulative):
-   - Box Volume:          35866.1 Ang^3
-   - Vol/Atom:            17.5128 Ang^3/atom
----------------------------------------------------------
----------------------------------------------------------
-      VOLUME COMPARISON AT 600.0 K
+      # Volume Comparison Results
 
- INSTANTANEOUS (Step 50k):
-   - Vol/Atom:            17.5127 Ang^3/atom
+### 🌡️ Simulation Results at 600.0 K
 
- AVERAGED (Cumulative):
-   - Box Volume:          35866.1 Ang^3
-   - Vol/Atom:            17.5128 Ang^3/atom
----------------------------------------------------------
+> **Note:** The following data was extracted after a 50ps NPT relaxation of an FCC Aluminum supercell (2048 atoms).
 
-      
+---
+
+#### 1. Instantaneous (Snapshot at Step 50,000)
+* **Vol/Atom:** `17.5127 Ang^3/atom`
+
+#### 2. Averaged (Cumulative Running Average)
+* **Box Volume:** `35866.1 Ang^3`
+* **Vol/Atom:** `17.5128 Ang^3/atom`
+
+---
+
+### 📝 Summary Table
+| Metric | Volume Per Atom ($\text{\AA}^3$) | Total Volume ($\text{\AA}^3$) |
+| :--- | :--- | :--- |
+| **Instantaneous** | 17.5127 | 35866.0 |
+| **Averaged** | **17.5128** | **35866.1** |
+
+---
