@@ -1,0 +1,65 @@
+clear
+echo none
+#package omp 1
+suffix omp
+
+
+variable mytol equal 1e+1
+variable time_step      equal   0.001
+variable tdamp          equal   "v_time_step*100"
+variable pdamp          equal   "v_time_step*1000"
+variable mytemp         equal   300.0
+variable ytemp          equal   600.0
+variable time_50ps      equal   50000
+variable time_200ps     equal   200000
+
+units           metal
+atom_style      atomic
+boundary p p p
+variable a0 equal 4.04999918095267
+
+
+lattice         fcc ${a0}
+region          box block 0 8 0 8 0 8
+create_box	1 box
+create_atoms    1 box
+
+include potential.mod
+
+mass 1 26.9815  # Al
+
+minimize 0.0 1.0e-6 10000 100000
+
+velocity        all create ${ytemp} 376847 mom yes rot yes dist gaussian loop all
+
+timestep        ${time_step}
+
+compute eng_per_atom all pe/atom
+compute ke_per_atom all ke/atom
+
+variable myvol equal vol
+
+fix 2  all npt temp ${ytemp} ${ytemp} ${tdamp} drag 1.0 pchain 8 aniso 0.0 0.0 ${pdamp}
+fix avg_vol all ave/time 1 2000 2000 v_myvol ave running
+thermo 2000
+thermo_style custom step temp pe etotal press vol lx ly f_avg_vol cpuremain spcpu
+run ${time_50ps}
+
+variable        box_volume equal vol
+variable        num_atoms equal count(all)
+variable        per_atom_volume equal "v_box_volume / v_num_atoms"
+
+print "Box volume (Ang^3): ${box_volume}"
+print "Number of atoms: ${num_atoms}"
+print "Per-atom volume (Ang^3/atom): ${per_atom_volume}"
+
+variable avg_vol_per_atom equal "f_avg_vol / v_num_atoms"
+
+print "-----------------------------------------"
+print "Final Averaged Vol/Atom: ${avg_vol_per_atom}"
+print "-----------------------------------------"
+
+unfix 2
+unfix avg_vol
+
+
