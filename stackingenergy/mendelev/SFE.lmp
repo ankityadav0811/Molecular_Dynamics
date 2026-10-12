@@ -1,0 +1,119 @@
+# --------------------- INITIALIZAITION ---------------------
+
+clear
+units		metal
+dimension	3
+boundary	p p p
+atom_style	atomic
+variable a0 equal 4.045270459463278
+
+timestep 0.001
+
+
+variable x_displace equal 1*(${a0}/sqrt(6))
+variable x_displace2 equal -(${a0}/sqrt(6))
+
+
+variable xdim equal ${a0}*sqrt(6)/2*10
+variable ydim equal ${a0}*sqrt(2)/2*15
+variable zdim equal ${a0}*sqrt(3)*8
+
+# --------------------- CRYSTAL STRUCTURE DEFINITION ---------------------
+
+
+lattice fcc ${a0}  orient x 1 1 2 orient y -1 1 0 orient z -1 -1 1 
+
+region		box block 0 ${xdim} 0 ${ydim} 0 ${zdim} units box
+create_box	1 box
+create_atoms	1 box
+
+# --------------------- EAM POTENTIAL ---------------------
+
+pair_style	eam/fs	
+pair_coeff * * Al-Mg.eam.fs Al
+
+write_data initial.lmp
+
+# --------------------- SETTINGS ---------------------
+
+variable zmax equal ${zdim}+5
+variable zmin equal -5
+
+
+compute peratom all pe/atom
+#compute eatoms all reduce sum c_peratom
+
+thermo 10
+
+#thermo_style custom step temp pe etotal press vol cpuremain
+
+#thermo_style custom step pe c_eatoms
+
+#dump 1 all custom 1 dump.relax.1.* id type xs ys zs c_peratom 
+#run 0
+
+min_style cg
+fix 5 all box/relax x 0.0 y 0.0
+minimize 0.0 1e-6 100000 100000 #etol is relative
+unfix 5
+
+
+write_data firstmini.lmp
+
+change_box all z final ${zmin} ${zmax} boundary p p f units box
+
+minimize 0.0 1e-6 100000 100000 #etol is relative
+
+run 0
+variable E equal etotal
+variable Eo equal $E
+
+#variable E equal "c_eatoms" computes the initial energy of the model before any sliding is done
+#E is necessary to store the initial energy in Eo
+
+
+variable z4 equal ${zdim}/4-0.1 #-${a0}*sqrt(3)/3
+variable z34 equal ${zdim}/4*3-0.1
+variable z2 equal ${zdim}/2-0.1
+
+
+region 1 block INF INF INF INF INF ${z2} units box
+group  top region 1
+
+displace_atoms top move ${x_displace} 0.0 0.0 units box
+
+
+
+write_data aftershift.lmp
+
+#displace_atoms is the command neccessary to move atoms into the next stacking arrangement (ie: A -> B)
+
+#fix 1 all setforce 0 0 NULL
+
+min_style cg
+
+#fix 5 all box/relax x 0.0 y 0.0 
+minimize 0.0 1e-6 100000 100000 #etol is relative
+#unfix 5
+
+write_data final.lmp
+
+#minimize 1e-10 1e-10 1000 1000
+run 0
+
+variable Ef equal etotal
+variable Cf equal 1.60217657e-16
+variable A equal (${xdim}*${ydim})*1e-20
+variable SFE equal ((${Ef}-${Eo})*${Cf})/${A}
+
+#variable Ef equal "c_eatoms" computes the final energy of the system after sliding is done
+#variable A is the area of the Stacking fault plane
+#variable Cf is the conversion factor of electro volts to millijoules
+#variable SFE is the stacking-fault energy of the system
+####################################
+# SIMULATION DONE
+print "All done"
+print "Initial energy of atoms = ${Eo} eV"
+print "Final energy of atoms = ${Ef} eV"
+print "Stacking-fault energy = ${SFE} mJ/m^2"
+

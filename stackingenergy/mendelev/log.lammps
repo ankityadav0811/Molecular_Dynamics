@@ -1,0 +1,363 @@
+LAMMPS (23 Jun 2022 - Update 3)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+# --------------------- INITIALIZAITION ---------------------
+
+clear
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+units		metal
+dimension	3
+boundary	p p p
+atom_style	atomic
+variable a0 equal 4.045270459463278
+
+timestep 0.001
+
+
+variable x_displace equal 1*(${a0}/sqrt(6))
+variable x_displace equal 1*(4.04527045946328/sqrt(6))
+variable x_displace2 equal -(${a0}/sqrt(6))
+variable x_displace2 equal -(4.04527045946328/sqrt(6))
+
+
+variable xdim equal ${a0}*sqrt(6)/2*10
+variable xdim equal 4.04527045946328*sqrt(6)/2*10
+variable ydim equal ${a0}*sqrt(2)/2*15
+variable ydim equal 4.04527045946328*sqrt(2)/2*15
+variable zdim equal ${a0}*sqrt(3)*8
+variable zdim equal 4.04527045946328*sqrt(3)*8
+
+# --------------------- CRYSTAL STRUCTURE DEFINITION ---------------------
+
+
+lattice fcc ${a0}  orient x 1 1 2 orient y -1 1 0 orient z -1 -1 1
+lattice fcc 4.04527045946328  orient x 1 1 2 orient y -1 1 0 orient z -1 -1 1
+Lattice spacing in x,y,z = 6.605899 5.7208763 7.006614
+
+region		box block 0 ${xdim} 0 ${ydim} 0 ${zdim} units box
+region		box block 0 49.5442424861955 0 ${ydim} 0 ${zdim} units box
+region		box block 0 49.5442424861955 0 42.9065726043016 0 ${zdim} units box
+region		box block 0 49.5442424861955 0 42.9065726043016 0 56.0529117291832 units box
+create_box	1 box
+Created orthogonal box = (0 0 0) to (49.544242 42.906573 56.052912)
+  2 by 1 by 2 MPI processor grid
+create_atoms	1 box
+Created 7200 atoms
+  using lattice units in orthogonal box = (0 0 0) to (49.544242 42.906573 56.052912)
+  create_atoms CPU = 0.001 seconds
+
+# --------------------- EAM POTENTIAL ---------------------
+
+pair_style	eam/fs
+pair_coeff * * Al-Mg.eam.fs Al
+
+write_data initial.lmp
+System init for write_data ...
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 9.5
+  ghost atom cutoff = 9.5
+  binsize = 4.75, bins = 11 10 12
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair eam/fs, perpetual
+      attributes: half, newton on
+      pair build: half/bin/atomonly/newton
+      stencil: half/bin/3d
+      bin: standard
+
+# --------------------- SETTINGS ---------------------
+
+variable zmax equal ${zdim}+5
+variable zmax equal 56.0529117291832+5
+variable zmin equal -5
+
+
+compute peratom all pe/atom
+#compute eatoms all reduce sum c_peratom
+
+thermo 10
+
+#thermo_style custom step temp pe etotal press vol cpuremain
+
+#thermo_style custom step pe c_eatoms
+
+#dump 1 all custom 1 dump.relax.1.* id type xs ys zs c_peratom
+#run 0
+
+min_style cg
+fix 5 all box/relax x 0.0 y 0.0
+minimize 0.0 1e-6 100000 100000 #etol is relative
+WARNING: Using 'neigh_modify every 1 delay 0 check yes' setting during minimization (src/min.cpp:187)
+Per MPI rank memory allocation (min/avg/max) = 5.23 | 5.423 | 5.615 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press          Volume    
+         0   0             -24556.73       0             -24556.73      -1.7582172e-09  119155.8     
+         1   0             -24556.73       0             -24556.73      -3.3388652e-10  119155.8     
+Loop time of 0.0797979 on 4 procs for 1 steps with 7200 atoms
+
+73.9% CPU use with 4 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+     -24556.7303000642  -24556.7303000642  -24556.7303000642
+  Force two-norm initial, final = 1.8136123e-10 1.2097355e-11
+  Force max component initial, final = 1.3023893e-10 1.0285106e-11
+  Final line search alpha, max atom move = 1 1.0285106e-11
+  Iterations, force evaluations = 1 2
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.035373   | 0.044888   | 0.052336   |   3.0 | 56.25
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.015149   | 0.023443   | 0.029652   |   3.5 | 29.38
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.01147    |            |       | 14.37
+
+Nlocal:           1800 ave        1946 max        1655 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+Nghost:           6173 ave        6318 max        6027 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+Neighs:         201600 ave      212991 max      190200 min
+Histogram: 1 1 0 0 0 0 0 0 1 1
+
+Total # of neighbors = 806400
+Ave neighs/atom = 112
+Neighbor list builds = 0
+Dangerous builds = 0
+unfix 5
+
+
+write_data firstmini.lmp
+System init for write_data ...
+
+change_box all z final ${zmin} ${zmax} boundary p p f units box
+change_box all z final -5 ${zmax} boundary p p f units box
+change_box all z final -5 61.0529117291832 boundary p p f units box
+Changing box ...
+  orthogonal box = (2.3756779e-14 2.1232214e-14 -5) to (49.544242 42.906573 61.052912)
+
+minimize 0.0 1e-6 100000 100000 #etol is relative
+WARNING: Using 'neigh_modify every 1 delay 0 check yes' setting during minimization (src/min.cpp:187)
+Per MPI rank memory allocation (min/avg/max) = 5.233 | 5.425 | 5.616 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press     
+         1   0             -24437.378      0             -24437.378     -4252.1981    
+        10   0             -24443.193      0             -24443.193     -2289.913     
+        20   0             -24443.205      0             -24443.205     -2059.1884    
+        30   0             -24443.205      0             -24443.205     -2016.0273    
+        40   0             -24443.205      0             -24443.205     -2007.7854    
+        50   0             -24443.205      0             -24443.205     -2007.5469    
+        60   0             -24443.205      0             -24443.205     -2007.257     
+        61   0             -24443.205      0             -24443.205     -2007.257     
+Loop time of 1.29983 on 4 procs for 60 steps with 7200 atoms
+
+89.6% CPU use with 4 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -24437.3781508082  -24443.2051741684  -24443.2051741684
+  Force two-norm initial, final = 7.2030472 8.9956654e-06
+  Force max component initial, final = 0.21438947 2.6068799e-07
+  Final line search alpha, max atom move = 0.5 1.30344e-07
+  Iterations, force evaluations = 60 117
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.93827    | 1.005      | 1.0796     |   6.4 | 77.32
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.19683    | 0.25688    | 0.3093     |   9.8 | 19.76
+Output  | 0.0003716  | 0.00038728 | 0.00043058 |   0.0 |  0.03
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.03759    |            |       |  2.89
+
+Nlocal:           1800 ave        1851 max        1750 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+Nghost:         4464.5 ave        4600 max        4330 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+Neighs:         188775 ave      202581 max      175087 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+
+Total # of neighbors = 755100
+Ave neighs/atom = 104.875
+Neighbor list builds = 0
+Dangerous builds = 0
+
+run 0
+WARNING: No fixes with time integration, atoms won't move (src/verlet.cpp:60)
+Per MPI rank memory allocation (min/avg/max) = 4.108 | 4.3 | 4.491 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press     
+        61   0             -24443.205      0             -24443.205     -2007.257     
+Loop time of 1.64e-06 on 4 procs for 0 steps with 7200 atoms
+
+122.0% CPU use with 4 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 1.64e-06   |            |       |100.00
+
+Nlocal:           1800 ave        1835 max        1765 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+Nghost:         4464.5 ave        4676 max        4247 min
+Histogram: 1 1 0 0 0 0 0 0 1 1
+Neighs:         188775 ave      199836 max      176671 min
+Histogram: 1 0 0 1 0 0 0 1 0 1
+
+Total # of neighbors = 755100
+Ave neighs/atom = 104.875
+Neighbor list builds = 0
+Dangerous builds = 0
+variable E equal etotal
+variable Eo equal $E
+variable Eo equal -24443.205174169
+
+#variable E equal "c_eatoms" computes the initial energy of the model before any sliding is done
+#E is necessary to store the initial energy in Eo
+
+
+variable z4 equal ${zdim}/4-0.1 #-${a0}*sqrt(3)/3
+variable z4 equal 56.0529117291832/4-0.1 
+variable z34 equal ${zdim}/4*3-0.1
+variable z34 equal 56.0529117291832/4*3-0.1
+variable z2 equal ${zdim}/2-0.1
+variable z2 equal 56.0529117291832/2-0.1
+
+
+region 1 block INF INF INF INF INF ${z2} units box
+region 1 block INF INF INF INF INF 27.9264558645916 units box
+group  top region 1
+3600 atoms in group top
+
+displace_atoms top move ${x_displace} 0.0 0.0 units box
+displace_atoms top move 1.65147474953985 0.0 0.0 units box
+Displacing atoms ...
+
+
+
+write_data aftershift.lmp
+System init for write_data ...
+
+#displace_atoms is the command neccessary to move atoms into the next stacking arrangement (ie: A -> B)
+
+#fix 1 all setforce 0 0 NULL
+
+min_style cg
+
+#fix 5 all box/relax x 0.0 y 0.0
+minimize 0.0 1e-6 100000 100000 #etol is relative
+WARNING: Using 'neigh_modify every 1 delay 0 check yes' setting during minimization (src/min.cpp:187)
+Per MPI rank memory allocation (min/avg/max) = 5.233 | 5.425 | 5.616 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press     
+        61   0             -24426.064      0             -24426.064     -1870.9187    
+        70   0             -24426.304      0             -24426.304     -1777.2471    
+        80   0             -24426.339      0             -24426.339     -2248.3118    
+        90   0             -24426.343      0             -24426.343     -2359.2301    
+        96   0             -24426.343      0             -24426.343     -2358.9506    
+Loop time of 0.636558 on 4 procs for 35 steps with 7200 atoms
+
+93.4% CPU use with 4 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -24426.0643533344   -24426.343400702   -24426.343400702
+  Force two-norm initial, final = 0.82673586 0.00010880764
+  Force max component initial, final = 0.023885834 2.9945056e-06
+  Final line search alpha, max atom move = 0.5 1.4972528e-06
+  Iterations, force evaluations = 35 70
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.48425    | 0.52336    | 0.5735     |   4.6 | 82.22
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.053757   | 0.096624   | 0.12843    |   8.7 | 15.18
+Output  | 0.00017983 | 0.00027626 | 0.00056346 |   0.0 |  0.04
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0163     |            |       |  2.56
+
+Nlocal:           1800 ave        1835 max        1765 min
+Histogram: 1 0 0 1 0 0 1 0 0 1
+Nghost:         4464.5 ave        4656 max        4247 min
+Histogram: 1 1 0 0 0 0 0 0 0 2
+Neighs:         188700 ave      197586 max      176847 min
+Histogram: 1 0 0 1 0 0 0 0 1 1
+
+Total # of neighbors = 754800
+Ave neighs/atom = 104.83333
+Neighbor list builds = 0
+Dangerous builds = 0
+#unfix 5
+
+write_data final.lmp
+System init for write_data ...
+
+#minimize 1e-10 1e-10 1000 1000
+run 0
+WARNING: No fixes with time integration, atoms won't move (src/verlet.cpp:60)
+Per MPI rank memory allocation (min/avg/max) = 4.108 | 4.3 | 4.491 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press     
+        96   0             -24426.343      0             -24426.343     -2358.9506    
+Loop time of 1.7425e-06 on 4 procs for 0 steps with 7200 atoms
+
+129.1% CPU use with 4 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 1.743e-06  |            |       |100.00
+
+Nlocal:           1800 ave        1806 max        1794 min
+Histogram: 1 0 0 1 0 0 1 0 0 1
+Nghost:         4464.5 ave        4649 max        4276 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+Neighs:         187800 ave      194754 max      180517 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+
+Total # of neighbors = 751200
+Ave neighs/atom = 104.33333
+Neighbor list builds = 0
+Dangerous builds = 0
+
+variable Ef equal etotal
+variable Cf equal 1.60217657e-16
+variable A equal (${xdim}*${ydim})*1e-20
+variable A equal (49.5442424861955*${ydim})*1e-20
+variable A equal (49.5442424861955*42.9065726043016)*1e-20
+variable SFE equal ((${Ef}-${Eo})*${Cf})/${A}
+variable SFE equal ((-24426.3434007023-${Eo})*${Cf})/${A}
+variable SFE equal ((-24426.3434007023--24443.205174169)*${Cf})/${A}
+variable SFE equal ((-24426.3434007023--24443.205174169)*1.60217657e-16)/${A}
+variable SFE equal ((-24426.3434007023--24443.205174169)*1.60217657e-16)/2.12577363735907e-17
+
+#variable Ef equal "c_eatoms" computes the final energy of the system after sliding is done
+#variable A is the area of the Stacking fault plane
+#variable Cf is the conversion factor of electro volts to millijoules
+#variable SFE is the stacking-fault energy of the system
+####################################
+# SIMULATION DONE
+print "All done"
+All done
+print "Initial energy of atoms = ${Eo} eV"
+Initial energy of atoms = -24443.205174169 eV
+print "Final energy of atoms = ${Ef} eV"
+Final energy of atoms = -24426.3434007023 eV
+print "Stacking-fault energy = ${SFE} mJ/m^2"
+Stacking-fault energy = 127.085677902001 mJ/m^2
+
+Total wall time: 0:00:02

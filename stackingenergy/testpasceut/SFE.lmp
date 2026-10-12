@@ -1,0 +1,82 @@
+
+# Intrinsic stacking fault energy of FCC Al
+# MEAM potential
+# Normal-only atomic relaxation
+
+clear
+units metal
+dimension 3
+boundary p p s
+atom_style atomic
+
+variable a0 equal 4.04999918095267
+
+# Oriented cell dimensions
+variable lx equal v_a0*sqrt(6)/2*10
+variable ly equal v_a0*sqrt(2)/2*10
+variable lz equal v_a0*sqrt(3)*8
+
+# FCC lattice: Z normal to {111}
+lattice fcc ${a0} orient x 1 1 2 orient y -1 1 0 orient z -1 -1 1
+
+region box block 0 ${lx} 0 ${ly} 0 ${lz} units box
+create_box 1 box
+create_atoms 1 box
+
+mass 1 26.9815385
+
+# MEAM potential
+pair_style meam
+pair_coeff * * library-Al.meam Al Al.meam Al
+
+neighbor 2.0 bin
+neigh_modify every 1 delay 0 check yes
+
+thermo 100
+thermo_style custom step pe etotal press
+
+# Define upper-half atoms
+variable zcut equal v_lz/2-0.1
+region upper block INF INF INF INF ${zcut} INF units box
+group upper region upper
+
+# Allow relaxation only along Z
+fix relax all setforce 0.0 0.0 NULL
+
+min_style cg
+minimize 1.0e-12 1.0e-10 10000 100000
+
+# Save reference energy
+variable Eref equal pe
+variable E0 equal ${Eref}
+
+write_data perfect_relaxed.data
+
+# Shockley partial displacement
+variable dx equal -v_a0/sqrt(6)
+
+displace_atoms upper move ${dx} 0.0 0.0 units box
+
+# Relax faulted structure along Z
+minimize 1.0e-12 1.0e-10 10000 100000
+
+write_data faulted_relaxed.data
+
+# Calculate intrinsic stacking fault energy
+variable Efinal equal pe
+variable Ef equal ${Efinal}
+
+# Conversion: eV/A^2 to mJ/m^2
+variable area equal v_lx*v_ly
+variable SFE equal (v_Ef-v_E0)*16021.76634/v_area
+
+print "Reference energy = ${E0} eV"
+print "Faulted energy = ${Ef} eV"
+print "Intrinsic stacking fault energy = ${SFE} mJ/m^2"
+
+
+
+
+
+
+
